@@ -1,0 +1,30 @@
+# Filmklubben — AI Coding Rules
+
+## Project
+Swedish movie club website. Next.js 14 App Router, Supabase, Tailwind, shadcn/ui, Framer Motion, Embla Carousel. Hosted on Netlify.
+
+## Language
+All user-facing strings in **Swedish**.
+
+## Code Rules
+- TypeScript strict — no `any`
+- Named exports only (except Next.js pages/layouts which use default export)
+- Files: `kebab-case`. Components: `PascalCase`
+- Internal imports use `@/` alias
+- API routes: validate with Zod, return `{ error: string }` on failure
+- No comments unless WHY is non-obvious
+
+## Auth
+Single admin account. JWT stored in localStorage. Protected routes check `Authorization: Bearer <token>` header. See `src/lib/auth.ts`.
+
+## Database
+Supabase PostgreSQL. Client in `src/lib/supabase.ts`. Two tables: `movies`, `ratings`. View: `movies_with_ratings`.
+
+## Movie Extraction
+`src/lib/tmdb.ts` for IMDb/TMDB URLs. `src/lib/ai-extract.ts` (Claude Haiku) for other URLs.
+
+## Ratings
+Session UUID in localStorage (`filmklubben_session`). 1–10 scale. Upsert on `(movie_id, session_id)`.
+
+## Env Vars Required
+NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY, ADMIN_PASSWORD_HASH, JWT_SECRET, TMDB_API_KEY, ANTHROPIC_API_KEY

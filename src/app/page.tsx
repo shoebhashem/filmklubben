@@ -1,69 +1,70 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useEffect, useState } from 'react'
+import { MovieCarousel } from '@/components/MovieCarousel'
+import { MovieDetail } from '@/components/MovieDetail'
+import { MovieWithRating } from '@/types'
+import { Skeleton } from '@/components/ui/skeleton'
+
+export default function HomePage() {
+  const [movies, setMovies] = useState<MovieWithRating[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selected, setSelected] = useState<MovieWithRating | null>(null)
+
+  useEffect(() => {
+    fetch('/api/movies')
+      .then((r) => r.json())
+      .then((data) => setMovies(Array.isArray(data) ? data : []))
+      .catch(() => setMovies([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const topMovie = movies[0]
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-dvh bg-zinc-950 text-white flex flex-col">
+      <header className="px-6 pt-8 pb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-white">🎬 Filmklubben</h1>
+          <p className="text-zinc-500 text-xs mt-0.5">Vi tittar. Vi diskuterar. Vi betygsätter.</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <a href="/admin" className="text-zinc-600 hover:text-zinc-400 text-xs transition-colors">
+          Admin
+        </a>
+      </header>
+
+      {topMovie && (
+        <div className="px-6 py-2 mb-2">
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 flex items-center gap-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#f59e0b" stroke="none">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+            <div>
+              <p className="text-amber-400 text-xs font-medium">Bäst betygsatt</p>
+              <p className="text-white text-sm font-bold">{topMovie.title}</p>
+            </div>
+            {topMovie.avg_rating && (
+              <span className="ml-auto text-amber-400 font-bold text-lg">{topMovie.avg_rating}</span>
+            )}
+          </div>
         </div>
-      </main>
-    </div>
-  );
+      )}
+
+      <div className="flex-1 flex flex-col justify-center py-4">
+        {loading ? (
+          <div className="flex gap-4 justify-center">
+            <Skeleton className="rounded-2xl bg-zinc-800" style={{ width: 'min(72vw, 340px)', aspectRatio: '2/3' }} />
+          </div>
+        ) : (
+          <MovieCarousel movies={movies} onSelectMovie={setSelected} />
+        )}
+      </div>
+
+      <footer className="text-center pb-6 text-zinc-700 text-xs">
+        {movies.length > 0 && `${movies.length} filmer sedda`}
+      </footer>
+
+      <MovieDetail movie={selected} onClose={() => setSelected(null)} />
+    </main>
+  )
 }
