@@ -59,7 +59,7 @@ export default function HomePage() {
               <p className="text-white text-sm font-bold">{topMovie.title}</p>
             </div>
             {topMovie.avg_rating && (
-              <span className="ml-auto text-amber-400 font-bold text-lg">{topMovie.avg_rating}</span>
+              <span className="ml-auto text-amber-400 font-bold text-lg">{Number(topMovie.avg_rating).toFixed(1)}</span>
             )}
           </div>
         </div>
