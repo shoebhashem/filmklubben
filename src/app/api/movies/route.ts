@@ -20,7 +20,13 @@ export async function GET() {
     .order('avg_rating', { ascending: false, nullsFirst: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+
+  return NextResponse.json(data, {
+    headers: {
+      // CDN caches for 60s; stale responses served for up to 5 min while revalidating in background
+      'Cache-Control': 's-maxage=60, stale-while-revalidate=300',
+    },
+  })
 }
 
 export async function POST(req: NextRequest) {

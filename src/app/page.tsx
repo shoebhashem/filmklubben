@@ -12,10 +12,25 @@ export default function HomePage() {
   const [selected, setSelected] = useState<MovieWithRating | null>(null)
 
   useEffect(() => {
+    const CACHE_KEY = 'filmklubben_movies_cache'
+    try {
+      const cached = localStorage.getItem(CACHE_KEY)
+      if (cached) {
+        setMovies(JSON.parse(cached))
+        setLoading(false)
+      }
+    } catch {
+      // localStorage unavailable
+    }
+
     fetch('/api/movies')
       .then((r) => r.json())
-      .then((data) => setMovies(Array.isArray(data) ? data : []))
-      .catch(() => setMovies([]))
+      .then((data) => {
+        const movies = Array.isArray(data) ? data : []
+        setMovies(movies)
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(movies)) } catch { /* ignore */ }
+      })
+      .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
 
