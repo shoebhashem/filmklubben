@@ -12,9 +12,10 @@ import { Badge } from '@/components/ui/badge'
 interface MovieDetailProps {
   movie: MovieWithRating | null
   onClose: () => void
+  onRatingUpdate?: (movieId: string, avgRating: number | null, ratingCount: number) => void
 }
 
-export function MovieDetail({ movie, onClose }: MovieDetailProps) {
+export function MovieDetail({ movie, onClose, onRatingUpdate }: MovieDetailProps) {
   const [myRating, setMyRating] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -56,6 +57,7 @@ export function MovieDetail({ movie, onClose }: MovieDetailProps) {
         const refreshed = await fetch(`/api/movies/${movie.id}`).then((r) => r.json())
         setAvgRating(refreshed.avg_rating)
         setRatingCount(refreshed.rating_count)
+        onRatingUpdate?.(movie.id, refreshed.avg_rating, refreshed.rating_count)
       }
     } finally {
       setSubmitting(false)

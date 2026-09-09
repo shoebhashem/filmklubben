@@ -64,7 +64,15 @@ export default function HomePage() {
         {movies.length > 0 && `${movies.length} filmer sedda`}
       </footer>
 
-      <MovieDetail movie={selected} onClose={() => setSelected(null)} />
+      <MovieDetail
+        movie={selected}
+        onClose={() => setSelected(null)}
+        onRatingUpdate={(movieId, avgRating, ratingCount) => {
+          setMovies((prev) =>
+            prev.map((m) => m.id === movieId ? { ...m, avg_rating: avgRating, rating_count: ratingCount } : m)
+          )
+        }}
+      />
     </main>
   )
 }
