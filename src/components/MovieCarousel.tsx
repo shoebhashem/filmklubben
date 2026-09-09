@@ -13,7 +13,7 @@ interface MovieCarouselProps {
 
 export function MovieCarousel({ movies, onSelectMovie }: MovieCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
+    loop: movies.length > 5,
     align: 'center',
     skipSnaps: false,
   })
@@ -55,11 +55,10 @@ export function MovieCarousel({ movies, onSelectMovie }: MovieCarouselProps) {
                 movie={movie}
                 isActive={index === selectedIndex}
                 onClick={() => {
-                  if (index === selectedIndex) {
-                    onSelectMovie(movie)
-                  } else {
+                  if (index !== selectedIndex) {
                     emblaApi?.scrollTo(index)
                   }
+                  onSelectMovie(movie)
                 }}
               />
             </div>
