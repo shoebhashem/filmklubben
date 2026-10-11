@@ -1,0 +1,15 @@
+name: Keep Supabase alive
+
+on:
+  schedule:
+    - cron: '0 8 */5 * *'  # every 5 days at 08:00 UTC
+  workflow_dispatch:        # allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping site to keep Supabase active
+        run: |
+          curl -sf "${{ secrets.SITE_URL }}/api/movies" > /dev/null
+          echo "Ping sent at $(date)"
