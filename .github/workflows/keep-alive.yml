@@ -9,12 +9,44 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase via dedicated endpoint (no CDN cache)
+      - name: Check and resume Supabase if paused
         run: |
+          PROJECT_REF="ebgwrpsmpdrlbbrdrsvl"
+
+          STATUS=$(curl -s \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ACCESS_TOKEN }}" \
+            "https://api.supabase.com/v1/projects/${PROJECT_REF}" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin).get('status','unknown'))")
+
+          echo "Supabase project status: $STATUS"
+
+          if [ "$STATUS" = "INACTIVE" ] || [ "$STATUS" = "PAUSED" ]; then
+            echo "Project is paused — restoring..."
+            curl -s -X POST \
+              -H "Authorization: Bearer ${{ secrets.SUPABASE_ACCESS_TOKEN }}" \
+              "https://api.supabase.com/v1/projects/${PROJECT_REF}/restore"
+
+            echo "Waiting for project to become active..."
+            for i in $(seq 1 12); do
+              sleep 10
+              STATUS=$(curl -s \
+                -H "Authorization: Bearer ${{ secrets.SUPABASE_ACCESS_TOKEN }}" \
+                "https://api.supabase.com/v1/projects/${PROJECT_REF}" \
+                | python3 -c "import sys,json; print(json.load(sys.stdin).get('status','unknown'))")
+              echo "  Status after ${i}0s: $STATUS"
+              if [ "$STATUS" = "ACTIVE_HEALTHY" ]; then
+                break
+              fi
+            done
+          fi
+
+      - name: Ping app to confirm database is reachable
+        run: |
+          sleep 5
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.SITE_URL }}/api/ping")
-          echo "Response status: $STATUS at $(date)"
+          echo "Ping response: $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "Ping failed with status $STATUS"
             exit 1
           fi
-          echo "Supabase is alive"
+          echo "Supabase is alive and responding"
